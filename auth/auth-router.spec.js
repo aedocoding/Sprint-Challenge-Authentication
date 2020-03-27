@@ -1,21 +1,25 @@
 const request = require("supertest");
 const db = require("../database/dbConfig.js")
-const server = require("./auth-router.js");
-const test = {username: "Shana", password: "test"};
+const auth = require("./auth-router.js");
+const test = {username: "test", password: "test"};
 
-describe("server.js", function() {
+describe("auth-router.js", function() {
+  beforeEach(async () => {
+    // this function executes and clears out the table before each test
+    await db('users').truncate();
+  });
   
   describe("POST /", function() {
     it("it shoud return status code 201", async function() {
-      await db("users").truncate();
-      request(server)
+      await db("users");
+      request(auth)
         .post("/register")
         .send(test)
         .expect(201);
     });
     it("it shoud return JSON", async function() {
-      await db("users").truncate();
-      request(server)
+      await db("users");
+      request(auth)
         .post("/register")
         .send(test)
         .then(req => {
@@ -24,30 +28,44 @@ describe("server.js", function() {
     });
   });
   describe("POST /", function() {
+    it("dummy test", async function() {
+      await db("users");
+      request(auth)
+        .post("/login")
+        .send(test)
+        .expect();
+    });
     it("it shoud return status code 200", async function() {
-      await db("users")
-      request(server)
+      await db("users");
+      request(auth)
         .post("/login")
         .send(test)
         .expect(200);
     });
     it("it shoud return JSON", async function() {
       await db("users");
-      request(server)
+      request(auth)
         .post("/login")
         .send(test)
         .then(res => {
-          expect(res.body).toMatch(/json/i)
+          expect(res.body.message).toMatch(/json/i)
         })
-    }); 
-        it('should respond with { message: "Welcome test!" }', async function() {
-        await db("users")
-      request(server)
+    });
+    it("dummy test", async function() {
+      await db("users");
+      request(auth)
         .post("/login")
         .send(test)
-          .then(res => {
-            expect(res.body.message).toBe("Welcome test!");
-          });
-      });
+        .expect();
+    });
+    it("returns a token after login", async function() {
+      await db("users");
+      request(auth)
+        .post("/login")
+        .send(test)
+        .then(res => {
+          expect(res.body).toHaveProperty("token");
+        });
+    }); 
   });
 });
